@@ -21,6 +21,24 @@ struct ActivityTracker: View {
     
     @State private var selectCount: Int?
     
+    var totalHours: Double {
+        var hours = 0.0
+        for activity in activites {
+            hours += activity.HoursPerDay
+        }
+        return hours
+    }
+    
+    var remainingHours: Double {
+        24 - totalHours
+    }
+    
+    var maxHoursOfSelected: Double {
+        remainingHours + hoursPerDay
+    }
+    
+    let step = 1.0
+    
     var body: some View {
         NavigationStack {
             
@@ -38,34 +56,44 @@ struct ActivityTracker: View {
                         ).foregroundStyle(.red.opacity(0.5))
                             .cornerRadius(10)
                     }
-                    
-//                    SectorMark(
-//                        angle: .value("Value", 5),
-//                        innerRadius: .ratio(0.6),
-//                        outerRadius: .ratio(0.95),
-//                        angularInset: 1
-//                    ).foregroundStyle(.red.opacity(0.5))
-//                        .cornerRadius(10)
-//                    SectorMark(
-//                        angle: .value("Value", 2),
-//                        innerRadius: .ratio(0.6),
-//                        outerRadius: .ratio(0.95),
-//                        angularInset: 1
-//                    ).foregroundStyle(.green.opacity(0.5))
-//                        .cornerRadius(10)
-//                    SectorMark(
-//                        angle: .value("Value", 10),
-//                        innerRadius: .ratio(0.6),
-//                        outerRadius: .ratio(1.0),
-//                        angularInset: 1
-//                    ).foregroundStyle(.blue.opacity(0.5))
-//                        .cornerRadius(10)
                 }
+                .chartAngleSelection(value: $selectCount)
+                
+                List(activites) { activity in
+                    Text(activity.name)
+                        .onTapGesture {
+                            withAnimation {
+                                currentActivity = activity
+                                hoursPerDay = activity.HoursPerDay
+                            }
+                        }
+                }.listStyle(.plain)
+                    .scrollIndicators(.hidden)
+                
+                if let currentActivity {
+                    Slider(value: $hoursPerDay, in: 0...maxHoursOfSelected, step: step)
+                        .onChange(of: hoursPerDay) { oldValue, newValue in
+                            // TODO:
+                        }
+                }
+                
+                Button("Add") {
+                    addActivity()
+                }.buttonStyle(.borderedProminent).disabled(remainingHours <= 0)
+                
             }
             .padding()
             .navigationTitle("Activity Tracker")
         }
         
+    }
+    
+    private func addActivity() {
+        // TODO: addActivity
+    }
+    
+    private func deleteActivity(at offsets: IndexSet) {
+        // TODO: deleteActivity
     }
 }
 
