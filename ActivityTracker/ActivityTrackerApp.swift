@@ -12,7 +12,7 @@ import SwiftData
 struct ActivityTrackerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ActivityTracker()
         }.modelContainer(for: Activity.self)
     }
 }

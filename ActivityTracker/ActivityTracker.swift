@@ -11,7 +11,7 @@ import SwiftData
 
 struct ActivityTracker: View {
     @Query(sort: \Activity.name, order: .forward)
-    var activites: [Activity]
+    var activities: [Activity]
     
     @Environment(\.modelContext) private var context
     
@@ -23,7 +23,7 @@ struct ActivityTracker: View {
     
     var totalHours: Double {
         var hours = 0.0
-        for activity in activites {
+        for activity in activities {
             hours += activity.HoursPerDay
         }
         return hours
@@ -41,29 +41,30 @@ struct ActivityTracker: View {
     
     var body: some View {
         NavigationStack {
-            
             VStack {
-                if activites.isEmpty {
+                if activities.isEmpty {
                     ContentUnavailableView("Enter an Activity", systemImage: "list.dash")
                 } else {
                     Chart{
-                        let isSelected: Bool = true
-                        
-                        ForEach(activites) {activite in
+                                                
+                        ForEach(activities) { activity in
+                            let isSelected: Bool = currentActivity?.name == activity.name
+
                             SectorMark(
-                                angle: .value("Value", activite.HoursPerDay),
+                                angle: .value("Activities", activity.HoursPerDay),
                                 innerRadius: .ratio(0.6),
-                                outerRadius: isSelected ? 1.0 : .ratio(0.95),
+                                outerRadius: .ratio( isSelected ? 1.05 : 0.95),
                                 angularInset: 1
-                            ).foregroundStyle(.red.opacity(0.5))
+                            ).foregroundStyle(by: .value("activity", activity.name))
                                 .cornerRadius(10)
+                                .opacity(isSelected ? 1 : 0.5)
                         }
                     }
                     .chartAngleSelection(value: $selectCount)
                 }
                 
                 List{
-                    ForEach(activites) { activity in
+                    ForEach(activities) { activity in
                         ActivityRowView(activity: activity)
                             .contentShape(Rectangle())
                             .listRowBackground(currentActivity?.name == activity.name ? Color.blue.opacity(0.2) : .clear)
@@ -90,9 +91,9 @@ struct ActivityTracker: View {
                 if let currentActivity {
                     Slider(value: $hoursPerDay, in: 0...maxHoursOfSelected, step: step)
                         .onChange(of: hoursPerDay) { oldValue, newValue in
-                            if let index = self.activites
+                            if let index = self.activities
                                 .firstIndex(where: {$0.name == currentActivity.name}) {
-                                activites[index].HoursPerDay = newValue
+                                activities[index].HoursPerDay = newValue
                             }
                         }
                 }
@@ -120,8 +121,12 @@ struct ActivityTracker: View {
     }
     
     private func addActivity() {
-        if newName.count > 2 && !activites.contains(where: { $0.name.lowercased() == newName.lowercased() }) {
+        if newName.count > 2 && !activities.contains(where: { $0.name.lowercased() == newName.lowercased() }) {
             // go ahead and add actitity
+            
+            // Reset hoursPerday
+            hoursPerDay = 0
+            
             let activity = Activity(name: newName, HoursPerDay: hoursPerDay)
             //add new activity
             context.insert(activity)
@@ -136,13 +141,14 @@ struct ActivityTracker: View {
     private func deleteActivity(at offsets: IndexSet) {
         offsets
             .forEach { index in
-                let activity = activites[index]
+                let activity = activities[index]
                 context.delete(activity)
             }
     }
     
     private func getSelected(value: Int) {
         //TODO: getSelected
+        print(value)
         
     }
 }
