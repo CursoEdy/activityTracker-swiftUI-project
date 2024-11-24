@@ -43,32 +43,41 @@ struct ActivityTracker: View {
         NavigationStack {
             
             VStack {
-                Chart{
-                    
-                    let isSelected: Bool = true
-                    
-                    ForEach(activites) {activite in
-                        SectorMark(
-                            angle: .value("Value", activite.HoursPerDay),
-                            innerRadius: .ratio(0.6),
-                            outerRadius: isSelected ? 1.0 : .ratio(0.95),
-                            angularInset: 1
-                        ).foregroundStyle(.red.opacity(0.5))
-                            .cornerRadius(10)
-                    }
-                }
-                .chartAngleSelection(value: $selectCount)
-                
-                List(activites) { activity in
-                    ActivityRowView(activity: activity)
-                        .onTapGesture {
-                            withAnimation {
-                                currentActivity = activity
-                                hoursPerDay = activity.HoursPerDay
-                            }
+                if activites.isEmpty {
+                    ContentUnavailableView("Enter an Activity", systemImage: "list.dash")
+                } else {
+                    Chart{
+                        let isSelected: Bool = true
+                        
+                        ForEach(activites) {activite in
+                            SectorMark(
+                                angle: .value("Value", activite.HoursPerDay),
+                                innerRadius: .ratio(0.6),
+                                outerRadius: isSelected ? 1.0 : .ratio(0.95),
+                                angularInset: 1
+                            ).foregroundStyle(.red.opacity(0.5))
+                                .cornerRadius(10)
                         }
-                }.listStyle(.plain)
-                    .scrollIndicators(.hidden)
+                    }
+                    .chartAngleSelection(value: $selectCount)
+                }
+                
+                List{
+                    ForEach(activites) { activity in
+                        ActivityRowView(activity: activity)
+                            .contentShape(Rectangle())
+                            .listRowBackground(currentActivity?.name == activity.name ? Color.blue.opacity(0.2) : .clear)
+                            .onTapGesture {
+                                withAnimation {
+                                    currentActivity = activity
+                                    hoursPerDay = activity.HoursPerDay
+                                }
+                            }
+                    }
+                    .onDelete(perform: deleteActivity)
+                }
+                .listStyle(.plain)
+                .scrollIndicators(.hidden)
                 
                 //textfield
                 TextField("Enter new activity", text: $newName)
@@ -81,7 +90,10 @@ struct ActivityTracker: View {
                 if let currentActivity {
                     Slider(value: $hoursPerDay, in: 0...maxHoursOfSelected, step: step)
                         .onChange(of: hoursPerDay) { oldValue, newValue in
-                            // TODO:
+                            if let index = self.activites
+                                .firstIndex(where: {$0.name == currentActivity.name}) {
+                                activites[index].HoursPerDay = newValue
+                            }
                         }
                 }
                 
@@ -92,6 +104,17 @@ struct ActivityTracker: View {
             }
             .padding()
             .navigationTitle("Activity Tracker")
+            .toolbar {
+                EditButton().onChange(of: selectCount) { oldValue, newValue in
+                    if let newValue {
+                        withAnimation {
+                            //change currentActivity based on newValue of selectCount
+                            getSelected(value: newValue)
+                        }
+                    }
+                }
+            }
+            
         }
         
     }
@@ -111,7 +134,16 @@ struct ActivityTracker: View {
     }
     
     private func deleteActivity(at offsets: IndexSet) {
-        // TODO: deleteActivity
+        offsets
+            .forEach { index in
+                let activity = activites[index]
+                context.delete(activity)
+            }
+    }
+    
+    private func getSelected(value: Int) {
+        //TODO: getSelected
+        
     }
 }
 
