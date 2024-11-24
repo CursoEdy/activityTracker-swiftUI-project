@@ -60,7 +60,7 @@ struct ActivityTracker: View {
                 .chartAngleSelection(value: $selectCount)
                 
                 List(activites) { activity in
-                    Text(activity.name)
+                    ActivityRowView(activity: activity)
                         .onTapGesture {
                             withAnimation {
                                 currentActivity = activity
