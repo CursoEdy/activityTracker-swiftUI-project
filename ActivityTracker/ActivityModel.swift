@@ -15,8 +15,7 @@ class Activity {
     var name: String
     var HoursPerDay: Double
     
-    init(id: String = UUID().uuidString, name: String, HoursPerDay: Double = 0.0) {
-        self.id = id
+    init(name: String, HoursPerDay: Double = 0.0) {
         self.name = name
         self.HoursPerDay = HoursPerDay
     }

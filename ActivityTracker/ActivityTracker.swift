@@ -13,7 +13,7 @@ struct ActivityTracker: View {
     @Query(sort: \Activity.name, order: .forward)
     var activites: [Activity]
     
-    @Environment(\.modelContext) private var contect
+    @Environment(\.modelContext) private var context
     
     @State private var newName: String = ""
     @State private var hoursPerDay: Double = 0
@@ -70,6 +70,14 @@ struct ActivityTracker: View {
                 }.listStyle(.plain)
                     .scrollIndicators(.hidden)
                 
+                //textfield
+                TextField("Enter new activity", text: $newName)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .clipShape(.rect(cornerRadius: 10))
+                    .shadow(color: .gray, radius: 5, x: 5, y: 5)
+                
+                // Slider
                 if let currentActivity {
                     Slider(value: $hoursPerDay, in: 0...maxHoursOfSelected, step: step)
                         .onChange(of: hoursPerDay) { oldValue, newValue in
@@ -89,7 +97,17 @@ struct ActivityTracker: View {
     }
     
     private func addActivity() {
-        // TODO: addActivity
+        if newName.count > 2 && !activites.contains(where: { $0.name.lowercased() == newName.lowercased() }) {
+            // go ahead and add actitity
+            let activity = Activity(name: newName, HoursPerDay: hoursPerDay)
+            //add new activity
+            context.insert(activity)
+            
+            //reset new activity
+            newName = ""
+            
+            currentActivity = activity
+        }
     }
     
     private func deleteActivity(at offsets: IndexSet) {
