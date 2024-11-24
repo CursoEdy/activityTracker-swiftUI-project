@@ -61,6 +61,19 @@ struct ActivityTracker: View {
                         }
                     }
                     .chartAngleSelection(value: $selectCount)
+                    .chartBackground { _ in
+                        VStack {
+                            Image(systemName: "figure.walk")
+                                .imageScale(.large)
+                                .foregroundStyle(.blue)
+                            
+                            if let currentActivity {
+                                let trucateName = String(currentActivity.name.prefix(15))
+                                
+                                Text("\(trucateName)")
+                            }
+                        }
+                    }
                 }
                 
                 List{
@@ -147,12 +160,11 @@ struct ActivityTracker: View {
     }
     
     private func getSelected(value: Int) {
-        var cumulativeTotal = 0.0
+        var total = 0.0
         if let activity = activities.first(where: {
-            cumulativeTotal += $0.HoursPerDay;
-            return Int(cumulativeTotal) >= value
+            total += $0.HoursPerDay;
+            return Int(total) >= value
         }) {
-            //Update currentActivity
             currentActivity = activity
         }
         
